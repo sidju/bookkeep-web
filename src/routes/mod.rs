@@ -1,6 +1,8 @@
 use hyper::header::HeaderValue;
 use hyper::{Method, StatusCode};
 use askama::Template;
+use serde::Deserialize;
+use sqlx::types::Decimal;
 
 use crate::{
   State,
@@ -17,7 +19,7 @@ mod auth;
 use auth::*;
 
 // And the actual route modules
-mod secure;
+mod bookkeepings;
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -48,7 +50,9 @@ pub async fn route(
 
   // The actual routing
   match path_vec.pop().as_deref() {
-    None | Some("") | Some("index.html") => {
+    // Means a missing trailing slash, redirect to with slash
+    None => permanent_redirect(&format!("{}/", req.uri().path())),
+    Some("") => {
       // verify that the path ends here and that the method is correct
       // utility function for simple paths
       verify_method_path_end(&path_vec, &req, &Method::GET)?;
@@ -63,8 +67,8 @@ pub async fn route(
         hyper::header::HeaderValue::from_static("no-store")
       )
     },
-    Some("secure") => {
-      secure::route(state, req, path_vec).await
+    Some("bookkeepings") => {
+      bookkeepings::route(state, req, path_vec).await
     },
     _ => Err(Error::path_not_found(&req)),
   }

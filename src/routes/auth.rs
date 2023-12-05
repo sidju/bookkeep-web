@@ -33,10 +33,15 @@ pub async fn start_oidc_login_flow(
   ?;
 
   // Redirect the user to that url
-  add_header(
-    html(LoginRedirect{url: authorize_url.as_str()}.render()?),
-    hyper::header::CACHE_CONTROL,
-    hyper::header::HeaderValue::from_static("no-store"),
+  set_status(
+    add_header(
+      html(LoginRedirect{url: authorize_url.as_str()}.render()?),
+      hyper::header::CACHE_CONTROL,
+      hyper::header::HeaderValue::from_static("no-store"),
+    ),
+    // Setting this status reduces risk of browser complaining about
+    // about resubmitting when users get this page on a form submit
+    StatusCode::UNAUTHORIZED,
   )
 }
 

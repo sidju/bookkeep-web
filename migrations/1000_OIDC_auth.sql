@@ -10,7 +10,7 @@ CREATE TABLE LoginProcesses (
 
 -- To track our internal state (and registrations) we need to have user entries
 CREATE TABLE Users (
-	id SERIAL PRIMARY KEY, -- Other tables will link to this
+	id BIGSERIAL PRIMARY KEY, -- Other tables will link to this
 	email VARCHAR NOT NULL UNIQUE -- Logins match on identifier to log in
 );
 

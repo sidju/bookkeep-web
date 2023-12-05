@@ -30,7 +30,8 @@ sqlx = { version = "0.7", features = [
   "postgres",
   # Add non-standard data format support
   "time",
-  "json"
+  "json",
+  "rust_decimal"
 ]}
 # Auth library
 # (We'll later custom write the request/response code for this in raw hyper)

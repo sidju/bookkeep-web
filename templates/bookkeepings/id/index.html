@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ name }}{% endblock %}
+
+{% block body %}
+  <table>
+    <tr>
+      <th>Bookkeeping name</th>
+      <th>Owner</th>
+    </tr>
+    <tr>
+      <td>{{ name }}</td>
+      <td>{{ owner }}</td>
+    </tr>
+  </table>
+  <br>
+  Accounts:<br>
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Balance</th>
+    </tr>
+    {% for a in accounts %}
+    <tr>
+      <td>a.name</td>
+      <td>a.balance</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <br>
+  Transaction Groupings:
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Total monetary movement</th>
+    </tr>
+    {% for g in groupings %}
+    <tr>
+      <td>b.name</td>
+      <td>b.movement</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

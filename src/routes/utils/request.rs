@@ -69,63 +69,71 @@ pub fn parse_cookies<'a>(
     None => { Ok([].into()) },
   }
 }
-//// Wait for and save packets from client until transmission ends _OR_
-//// more bytes that Content-Length have been received (error).
-//// Uses validate_get_content_len to verify Content-Length < max_len
-//// (
-////  More performant than stream processing because Serde performs better
-////  on continuous memory, such as a list of bytes.
-//// )
-//pub async fn get_body(
-//  req: &mut Request,
-//  max_len: usize,
-//) -> Result<Vec<u8>, Error> {
-//  use hyper::body::HttpBody;
-//
-//  // First we validate and set up
-//  let expected_len = validate_get_content_len(req, max_len)?;
-//  let mut bytes = Vec::with_capacity(expected_len);
-//  let body = req.body_mut();
-//  futures::pin_mut!(body);
-//
-//  // Then we loop until we either overshoot Content-Len and error or
-//  // run out of data and return what we got
-//  while let Some(result) = body.data().await {
-//    let data = result?;
-//    // Check against overrunning
-//    if bytes.len() + data.len() > expected_len {
-//      // If we overrun try to estimate length of received request
-//      let estimate = bytes.len() + data.len() + body.size_hint().lower() as usize;
-//      return Err(Error::content_length_mismatch(estimate, expected_len));
-//    }
-//
-//    bytes.extend_from_slice(&data);
-//  }
-//
-//  // Finally check against undershooting
-//  if bytes.len() < expected_len {
-//    Err(Error::content_length_mismatch(bytes.len(), expected_len))
-//  } else {
-//    Ok(bytes)
-//  }
-//}
-//// Try to parse the body of the request as json into object of type T
-//// T to parse into is set to what you save the return value into
-//pub async fn parse_json<T: DeserializeOwned>(
-//  req: &mut Request,
-//  max_len: usize,
-//) -> Result<T, Error> {
-//  // Verify content type
-//  let content_type = get_header(req, "Content-Type")?.unwrap_or("");
-//  if "application/json; charset=utf-8" != content_type {
-//    return Err(Error::invalid_content_type(
-//      "application/json; charset=utf-8",
-//      content_type,
-//    ));
-//  }
-//  // Get body
-//  let bytes = get_body(req, max_len).await?;
-//  // Try to parse
-//  let data: T = serde_json::from_slice(&bytes)?;
-//  Ok(data)
-//}
+// Wait for and save packets from client until transmission ends _OR_
+// more bytes that Content-Length have been received (error).
+// Uses validate_get_content_len to verify Content-Length < max_len
+// (
+//  More performant than stream processing because Serde performs better
+//  on continuous memory, such as a list of bytes.
+// )
+pub async fn get_body(
+  req: &mut Request,
+  max_len: usize,
+) -> Result<Vec<u8>, Error> {
+  use hyper::body::Body; // Needed for size_hint operations
+  use http_body_util::BodyExt; // Provides the .frame() future on body
+
+  // First we validate and set up
+  let expected_len = validate_get_content_len(req, max_len)?;
+  let mut bytes = Vec::with_capacity(expected_len);
+  let body = req.body_mut();
+  futures::pin_mut!(body);
+
+  // Then we loop until we either overshoot Content-Len and error or
+  // run out of data and return what we got
+  while let Some(result) = body.frame().await {
+    // It could be an error or a trailer frame, so check that it is valid data
+    // Should be an &hyper::body::Bytes after this
+    let data = match result?.into_data() {
+      Ok(data) => data,
+      // If Err returned this is a trailer frame, which both signifies that
+      // there won't be more data and we don't care about.
+      Err(_original_frame) => break,
+    };
+    // Check against overrunning
+    if bytes.len() + data.len() > expected_len {
+      // If we overrun try to estimate length of received request
+      let estimate = bytes.len() + data.len() + body.size_hint().lower() as usize;
+      return Err(Error::content_length_mismatch(estimate, expected_len));
+    }
+    // As hyper::body::Bytes has Deref to [u8] we simply copy
+    bytes.extend_from_slice(&data);
+  }
+
+  // Finally check against undershooting
+  if bytes.len() < expected_len {
+    Err(Error::content_length_mismatch(bytes.len(), expected_len))
+  } else {
+    Ok(bytes)
+  }
+}
+// Try to parse the body of the request as form submission into object of type T
+// T to parse into is set to what you save the return value into
+pub async fn parse_body_urlencoded<T: DeserializeOwned>(
+  req: &mut Request,
+  max_len: usize,
+) -> Result<T, Error> {
+  // Verify content type
+  let content_type = get_header(req, "Content-Type")?.unwrap_or("");
+  if "application/x-www-form-urlencoded" != content_type {
+    return Err(Error::invalid_content_type(
+      "application/x-www-form-urlencoded",
+      content_type,
+    ));
+  }
+  // Get body
+  let bytes = get_body(req, max_len).await?;
+  // Try to parse
+  let data: T = serde_urlencoded::from_bytes(&bytes)?;
+  Ok(data)
+}

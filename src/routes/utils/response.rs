@@ -41,6 +41,19 @@ pub fn redirect(
   );
   Ok(re)
 }
+// Permanently redirect user to given url
+pub fn permanent_redirect(
+  target: &str,
+) -> Result<Response, Error> {
+  let mut re = Response::new("".into());
+  // Explicitly requires client to GET the given URL
+  *re.status_mut() = StatusCode::PERMANENT_REDIRECT;
+  re.headers_mut().insert(
+    "Location",
+    HeaderValue::from_str(target)?,
+  );
+  Ok(re)
+}
 // Return given string as css
 pub fn css(
   data: &'static str,
