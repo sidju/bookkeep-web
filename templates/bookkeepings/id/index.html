@@ -14,19 +14,38 @@
     </tr>
   </table>
   <br>
-  Accounts:<br>
+  Accounts:
   <table>
     <tr>
       <th>Name</th>
       <th>Balance</th>
+      <th>Type</td>
     </tr>
     {% for a in accounts %}
     <tr>
-      <td>a.name</td>
-      <td>a.balance</td>
+      {% if created.equals_account(a.id) %}
+      <td><b>{{ a.name }}</b></td>
+      {% else %}
+      <td>{{ a.name }}</td>
+      {% endif %}
+      <td>{{ a.balance }}</td>
+      <td>{{ a.type }}</td>
     </tr>
     {% endfor %}
   </table>
+  <form method="post" formenctype="application/x-www-form-urlencoded" action="accounts/">
+    Create new account:
+    <br>
+    Name: <input type="text" name="name">
+    <br>
+    Type:
+    {% for t in account_types %}
+    <input type="radio" id="{{ t.name }}" name="type" value="{{ t.name }}">
+    <label for="{{ t.name }}">{{ t.name }}</label>
+    {% endfor %}
+    <br>
+    <input type="submit" value="Create">
+  </form>
   <br>
   Transaction Groupings:
   <table>
@@ -36,9 +55,20 @@
     </tr>
     {% for g in groupings %}
     <tr>
-      <td>b.name</td>
-      <td>b.movement</td>
+      {% if created.equals_grouping(g.id) %}
+      <td><a href="groupings/{{ g.id }}/"><b>{{ g.name }}</b></a></td>
+      {% else %}
+      <td><a href="groupings/{{ g.id }}/">{{ g.name }}</a></td>
+      {% endif %}
+      <td>{{ g.movement }}</td>
     </tr>
     {% endfor %}
   </table>
+  <form method="post" formenctype="application/x-www-form-urlencoded" action="groupings/">
+    Create new grouping:
+    <br>
+    Name: <input type="text" name="name">
+    <br>
+    <input type="submit" value="Create">
+  </form>
 {% endblock %}

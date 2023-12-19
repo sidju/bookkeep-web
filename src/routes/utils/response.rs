@@ -54,6 +54,19 @@ pub fn permanent_redirect(
   );
   Ok(re)
 }
+// Redirect user to GET given url
+pub fn see_other(
+  target: &str,
+) -> Result<Response, Error> {
+  let mut re = Response::new("".into());
+  // Explicitly requires client to GET the given URL
+  *re.status_mut() = StatusCode::SEE_OTHER;
+  re.headers_mut().insert(
+    "Location",
+    HeaderValue::from_str(target)?,
+  );
+  Ok(re)
+}
 // Return given string as css
 pub fn css(
   data: &'static str,

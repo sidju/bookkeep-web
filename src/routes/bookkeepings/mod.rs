@@ -34,7 +34,6 @@ WHERE bookkeepings.owner_id = $1 OR UsersBookkeepingsAccess.user_id = $1
     .fetch_all(&state.db)
     .await?
   ;
-  println!("{bookkeepings:?}");
 
   // Render and return
   html(Index{
@@ -74,14 +73,7 @@ async fn index_post(
   ;
 
   // Return a the created object
-  add_header(
-    set_status(
-      empty(),
-      hyper::StatusCode::SEE_OTHER,
-    ),
-    hyper::header::LOCATION,
-    hyper::header::HeaderValue::from_str(&format!("{}/", created))?,
-  )
+  see_other(&format!("{}/", created))
 }
 
 pub async fn route(
@@ -122,15 +114,10 @@ pub async fn route(
     // Means a missing trailing slash, redirect to with slash
     None => permanent_redirect(&format!("{}/", req.uri().path())),
     Some("") => {
+      verify_path_end(&path_vec, &req)?;
       match req.method() {
-        &Method::GET => {
-          verify_path_end(&path_vec, &req)?;
-          index(state, req, session).await
-        },
-        &Method::POST => {
-          verify_path_end(&path_vec, &req)?;
-          index_post(state, req, session).await
-        },
+        &Method::GET => index(state, req, session).await,
+        &Method::POST => index_post(state, req, session).await,
         _ => Err(Error::method_not_found(&req)),
       }
     },

@@ -1,0 +1,13 @@
+Accounts:<br>
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Balance</th>
+  </tr>
+  {% for a in accounts %}
+  <tr>
+    <td>{{ a.name }}</td>
+    <td>{{ a.balance }}</td>
+  </tr>
+  {% endfor %}
+</table>

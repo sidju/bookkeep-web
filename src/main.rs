@@ -3,6 +3,7 @@ use hyper::service::{
 };
 use std::net::SocketAddr;
 use std::convert::Infallible;
+use std::error::Error as StdError;
 
 // Define and construct application state (config / data shared across threads)
 mod state;
@@ -57,6 +58,9 @@ async fn run_server(
         .await
       {
         eprintln!("Error {e} when serving {client_address}!");
+        if let Some(cause) = e.source() {
+          eprintln!("...caused by error {cause}!");
+        }
       }
     });
   }

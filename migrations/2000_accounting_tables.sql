@@ -25,6 +25,7 @@ CREATE TABLE UsersBookkeepingsAccess (
 CREATE TABLE AccountTypes (
   name VARCHAR(64) PRIMARY KEY
 );
+INSERT INTO AccountTypes(name) VALUES ('Expense'),('Asset'),('Debt'),('Income');
 
 -- Accounts as in accounting
 CREATE TABLE Accounts (
