@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ name }}{% endblock %}
+
+{% block body %}
+  <table>
+    <tr>
+      <th>Transaction name</th>
+      <th>Grouping</th>
+      <th>Bookkeeping</th>
+    </tr>
+    <tr>
+      <td>{{ name }}</td>
+      <td>{{ grouping_name }}</td>
+      <td>{{ bookkeeping_name }}</td>
+    </tr>
+  </table>
+  <br>
+  Account changes:
+  <table>
+    <tr>
+      <td>Account</th>
+      <th>Date</th>
+      <td>Message</th>
+      <th>Amount</th>
+    </tr>
+    {% for a in account_changes %}
+    <tr>
+      {% if created.equals_account_change(a.id) %}
+      <td><b>{{ a.account_name }}</b></td>
+      {% else %}
+      <td>{{ a.account_name }}</td>
+      {% endif %}
+      <td>{{ a.date.to_string() }}</td>
+      <td>{{ a.message }}</td>
+      <td>{{ a.amount.to_string() }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <form method="post" formenctype="application/x-www-form-urlencoded" action="account-changes/">
+    Create new account change:
+    <br>
+    Account: <select name="account">
+      {% for (t, accounts) in accounts_by_type %}
+        <optgroup label="{{ t }}">
+          {% for a in accounts %}
+            <option value="{{ a.id }}">{{ a.name }}</option>
+          {% endfor %}
+        </optgroup>
+      {% endfor %}
+    </select>
+    <br>
+    Date: <input type="date" name="date">
+    <br>
+    Message: <input type="text" name="message">
+    <br>
+    Amount: <input type="number" name="amount" step=".01">
+    <br>
+    <input type="submit" value="Create">
+  </form>
+{% endblock %}

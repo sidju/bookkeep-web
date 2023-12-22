@@ -58,11 +58,9 @@ CREATE TABLE Transactions (
   id BIGSERIAL PRIMARY KEY,
   name VARCHAR(64) NOT NULL,
   day DATE NOT NULL,
-  bookkeeping_id BIGINT NOT NULL,
   grouping_id BIGINT NOT NULL,
   comments JSONB DEFAULT '{}'::jsonb,
 
-  FOREIGN KEY (bookkeeping_id) REFERENCES Bookkeepings(id),
   FOREIGN KEY (grouping_id) REFERENCES Groupings(id)
 );
 
@@ -72,7 +70,7 @@ CREATE TABLE AccountChanges (
   id BIGSERIAL PRIMARY KEY,
   transaction_id BIGINT NOT NULL,
   account_id BIGINT NOT NULL,
-  message VARCHAR(256) DEFAULT '',
+  message VARCHAR(256) NOT NULL DEFAULT '',
   day DATE NOT NULL,
   -- Up to 32 digits, two of which after the decimal point
   amount NUMERIC(32,2) NOT NULL,

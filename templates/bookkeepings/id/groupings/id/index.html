@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ name }}{% endblock %}
+
+{% block body %}
+  <table>
+    <tr>
+      <th>Grouping name</th>
+      <th>Bookkeeping</th>
+    </tr>
+    <tr>
+      <td>{{ name }}</td>
+      <td>{{ bookkeeping_name }}</td>
+    </tr>
+  </table>
+  <br>
+  Accounts:
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Balance</th>
+      <th>Type</td>
+    </tr>
+    {% for a in accounts %}
+    <tr>
+      <td>{{ a.name }}</td>
+      <td>{{ a.balance }}</td>
+      <td>{{ a.type }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <br>
+  Transactions:
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Date</th>
+      <th>Valid</th>
+    </tr>
+    {% for t in transactions %}
+    <tr>
+      {% if created.equals_transaction(t.id) %}
+      <td><a href="transactions/{{ t.id }}/"><b>{{ t.name }}</b></a></td>
+      {% else %}
+      <td><a href="transactions/{{ t.id }}/">{{ t.name }}</a></td>
+      {% endif %}
+      <td>{{ t.date.to_string() }}</td>
+      <td>{% if t.sum.is_zero() %}valid{% else %}<b>INVALID</b>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <form method="post" formenctype="application/x-www-form-urlencoded" action="transactions/">
+    Create new transaction:
+    <br>
+    Name: <input type="text" name="name">
+    <br>
+    Date: <input type="date" name="date">
+    <br>
+    <input type="submit" value="Create">
+  </form>
+{% endblock %}

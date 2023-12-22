@@ -31,8 +31,10 @@ sqlx = { version = "0.7", features = [
   # Add non-standard data format support
   "time",
   "json",
-  "rust_decimal"
+  "rust_decimal",
 ]}
+rust_decimal = "*"
+time = { version = "*", features = ["serde-human-readable"] }
 # Auth library
 # (We'll later custom write the request/response code for this in raw hyper)
 openidconnect = { version = "3.4"} #, default-features = false }
