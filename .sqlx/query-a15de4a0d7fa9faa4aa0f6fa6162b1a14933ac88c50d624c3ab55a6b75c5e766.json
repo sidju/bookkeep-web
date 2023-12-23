@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nSELECT AccountChanges.id, Accounts.name AS account_name, AccountChanges.message,\n    AccountChanges.day AS date, AccountChanges.amount\n  FROM AccountChanges\n  INNER JOIN Accounts ON AccountChanges.account_id = Accounts.id\nWHERE AccountChanges.transaction_id = $1\nORDER BY AccountChanges.day\n    ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "account_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "message",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 4,
+        "name": "amount",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "a15de4a0d7fa9faa4aa0f6fa6162b1a14933ac88c50d624c3ab55a6b75c5e766"
+}

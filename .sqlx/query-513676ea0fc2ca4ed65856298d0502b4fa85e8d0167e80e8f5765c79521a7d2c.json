@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO LoginProcesses(state_id, nonce) VALUES($1, $2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "513676ea0fc2ca4ed65856298d0502b4fa85e8d0167e80e8f5765c79521a7d2c"
+}

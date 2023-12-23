@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nSELECT Bookkeepings.id, Bookkeepings.name, Users.email AS owner\n  FROM Bookkeepings\n  LEFT JOIN UsersBookkeepingsAccess ON Bookkeepings.id = bookkeeping_id\n  JOIN Users ON Users.id = Bookkeepings.owner_id\nWHERE (Bookkeepings.owner_id = $1 OR UsersBookkeepingsAccess.user_id = $1)\n  AND Bookkeepings.id = $2\n    ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "owner",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "41c57d9347a0a292a6388578a8699f1f81739da07ed8ef275d808df525936ef9"
+}

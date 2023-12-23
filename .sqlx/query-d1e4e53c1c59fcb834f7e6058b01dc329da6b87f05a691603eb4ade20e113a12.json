@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nSELECT Groupings.id, Groupings.name, COALESCE(SUM(CASE\n    WHEN AccountChanges.amount > 0 THEN AccountChanges.amount\n    ELSE 0\n  END), 0) AS \"movement!\"\n  FROM Groupings\n  LEFT JOIN Transactions ON Transactions.grouping_id = Groupings.id\n  LEFT JOIN AccountChanges ON AccountChanges.transaction_id = Transactions.id\nWHERE Groupings.bookkeeping_id = $1\nGROUP BY Groupings.id\n    ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "movement!",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "d1e4e53c1c59fcb834f7e6058b01dc329da6b87f05a691603eb4ade20e113a12"
+}
