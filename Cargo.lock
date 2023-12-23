@@ -222,6 +222,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "bookkeep-web"
+version = "0.1.0"
+dependencies = [
+ "askama",
+ "dotenvy",
+ "futures",
+ "http-body-util",
+ "hyper 1.0.1",
+ "hyper-util",
+ "nanoid",
+ "openidconnect",
+ "reqwest",
+ "rust_decimal",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "sqlx",
+ "time",
+ "tokio",
+]
+
+[[package]]
 name = "borsh"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -509,28 +531,6 @@ name = "dotenvy"
 version = "0.15.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
-
-[[package]]
-name = "drim"
-version = "0.1.0"
-dependencies = [
- "askama",
- "dotenvy",
- "futures",
- "http-body-util",
- "hyper 1.0.1",
- "hyper-util",
- "nanoid",
- "openidconnect",
- "reqwest",
- "rust_decimal",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "sqlx",
- "time",
- "tokio",
-]
 
 [[package]]
 name = "dyn-clone"

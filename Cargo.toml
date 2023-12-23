@@ -1,5 +1,5 @@
 [package]
-name = "drim"
+name = "bookkeep-web"
 version = "0.1.0"
 authors = ["sidju <contact@sidju.se>"]
 license = "MIT"
