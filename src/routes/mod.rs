@@ -22,6 +22,8 @@ use auth::*;
 // And the actual route modules
 mod bookkeepings;
 
+const CSS: &'static str = include_str!("styles.css");
+
 #[derive(Template)]
 #[template(path = "index.html")]
 struct Index{
@@ -70,6 +72,10 @@ pub async fn route(
     },
     Some("bookkeepings") => {
       bookkeepings::route(state, req, path_vec).await
+    },
+    Some("styles.css") => {
+      verify_method_path_end(&path_vec, &req, &Method::GET)?;
+      css(CSS)
     },
     _ => Err(Error::path_not_found(&req)),
   }

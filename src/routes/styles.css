@@ -1,0 +1,17 @@
+/* Offset content a bit from the edges */
+body {
+  margin: 10%;
+}
+
+/* Fix table styling */
+table, th, td {
+  border: 1px solid;
+  margin: 1m;
+}
+tr:nth-child(even) {
+  background-color: #eeeeee;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
