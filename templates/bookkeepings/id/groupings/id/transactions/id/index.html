@@ -6,11 +6,15 @@
   <table>
     <tr>
       <th>Transaction name</th>
+      <th>Transaction date</th>
+      <th>Transaction sum</th>
       <th>Grouping</th>
       <th>Bookkeeping</th>
     </tr>
     <tr>
       <td>{{ name }}</td>
+      <td>{{ date }}</td>
+      <td>{{ sum }}</td>
       <td>{{ grouping_name }}</td>
       <td>{{ bookkeeping_name }}</td>
     </tr>
@@ -50,7 +54,7 @@
       {% endfor %}
     </select>
     <br>
-    Date: <input type="date" name="date">
+    Date: <input type="date" name="date" value="{{ date.to_string() }}">
     <br>
     Message: <input type="text" name="message">
     <br>

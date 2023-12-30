@@ -45,7 +45,7 @@
       <td><a href="transactions/{{ t.id }}/">{{ t.name }}</a></td>
       {% endif %}
       <td>{{ t.date.to_string() }}</td>
-      <td>{% if t.sum.is_zero() %}valid{% else %}<b>INVALID</b>{% endif %}</td>
+      <td>{% if t.sum.is_zero() %}valid{% else %}<b>INVALID BY {{ t.sum }}</b>{% endif %}</td>
     </tr>
     {% endfor %}
   </table>
