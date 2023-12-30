@@ -63,7 +63,8 @@ SELECT Accounts.id, Accounts.name, Accounts.type, COALESCE(SUM(AccountChanges.am
   FROM Accounts
   LEFT JOIN AccountChanges ON AccountChanges.account_id = Accounts.id
 WHERE Accounts.bookkeeping_id = $1
-GROUP BY Accounts.id, Accounts.name
+GROUP BY Accounts.id, Accounts.name, Accounts.type
+ORDER BY Accounts.type, Accounts.name
     ",
     bookkeeping.id,
   )
