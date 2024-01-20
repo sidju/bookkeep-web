@@ -60,6 +60,9 @@ pub async fn init_state() -> &'static State {
     .expect("OIDC_REDIRECT_URI must be present in environment or .env file")
   ;
   oidc_redirect_url.push_str("/post-login");
+  let admin_gmail = var("ADMIN_GMAIL")
+    .expect("ADMIN_GMAIL must be present in environment or .env file")
+  ;
 
   // Construct requisite objects
   let db = sqlx::postgres::PgPoolOptions::new()
@@ -106,6 +109,18 @@ pub async fn init_state() -> &'static State {
     .run(&db)
     .await
     .expect("Failed to run database migrations. Usually caused by an already applied migration having changed in the source code")
+  ;
+  sqlx::query!(
+    "
+INSERT INTO Users(id, email) VALUES(0, $1)
+  ON CONFLICT (id)
+  DO UPDATE SET email = $1 WHERE Users.id = 0
+    ",
+    admin_gmail,
+  )
+    .execute(&db)
+    .await
+    .expect("Failed to create admin account.")
   ;
 
   // Construct and return pointer to eternal instance
