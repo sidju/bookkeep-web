@@ -65,9 +65,15 @@ async fn index_post(
   )
     .fetch_one(&state.db)
     .await
-    // TODO Convert sqlx::Error::Database(e)
-    //   if e.is_unique_violation() to duplicate entry
-    //   if e.is_foreign_key_violation() to something?
+    .map_err(|e| -> Error { match e {
+      sqlx::Error::Database(ref dbe) if dbe.is_unique_violation() => {
+        ClientError::AlreadyExists(format!(
+          "A Bookkeeping by name {} already exists.",
+          new_bookkeeping.name,
+        )).into()
+      },
+      e => e.into(),
+    }})
     ?
     .id
   ;

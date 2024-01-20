@@ -1,49 +1,11 @@
 use super::*;
 
-#[derive(Debug)]
-struct AccountSummary {
-  id: i64,
-  name: String,
-  r#type: String,
-  balance: Decimal,
-}
-#[derive(Debug, Template)]
-#[template(path = "bookkeepings/id/accounts/index.html")]
-struct Index {
-  accounts: Vec<AccountSummary>,
-}
-
-async fn index(
-  state: &'static State,
-  req: Request,
-  session: SessionData,
-  bookkeeping_id: i64,
-) -> Result<Response, Error> {
-  let a = sqlx::query_as!(AccountSummary,
-    "
-SELECT Accounts.id, Accounts.name, Accounts.type, COALESCE(SUM(AccountChanges.amount), 0) AS \"balance!\"
-  FROM Accounts
-  LEFT JOIN AccountChanges ON AccountChanges.account_id = Accounts.id
-WHERE Accounts.bookkeeping_id = $1
-GROUP BY Accounts.id, Accounts.name
-    ",
-    bookkeeping_id,
-  )
-    .fetch_all(&state.db)
-    .await?
-  ;
-  println!("{a:?}");
-
-  html(Index{
-    accounts: a,
-  }.render()?)
-}
 #[derive(Debug, Deserialize)]
 struct NewAccount {
   name: String,
   r#type: String,
 }
-async fn index_post(
+async fn index_put(
   state: &'static State,
   mut req: Request,
   session: SessionData,
@@ -63,9 +25,15 @@ async fn index_post(
   )
     .fetch_one(&state.db)
     .await
-    // TODO Convert
-    //   if is_unique_violation mark duplicate account
-    //   if is_foreign_key_violation mark bad request
+    .map_err(|e| -> Error { match e {
+      sqlx::Error::Database(ref dbe) if dbe.is_unique_violation() => {
+        ClientError::AlreadyExists(format!(
+          "An account by name {} already exists in this bookkeeping.",
+          new_account.name,
+        )).into()
+      },
+      e => e.into(),
+    }})
     ?
     .id
   ;
@@ -84,8 +52,7 @@ pub async fn route(
     Some("") => {
       verify_path_end(&path_vec, &req)?;
       match req.method() {
-//        &Method::GET => index(state, req, session, bookkeeping_id).await,
-        &Method::POST => index_post(state, req, session, bookkeeping.id).await,
+        &Method::POST => index_put(state, req, session, bookkeeping.id).await,
         _ => Err(Error::method_not_found(&req)),
       }
     },

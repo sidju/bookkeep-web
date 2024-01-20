@@ -84,7 +84,10 @@ pub enum ClientError {
   InvalidUrlEncoding(String),
   InvalidIndexPath(String),
 
-  // Non-parsing user errors
+  // Request processing errors
+  AlreadyExists(String), // For example uniqueness error on name column
+
+  // Non-parsing user-caused errors (but probably not intentional)
   UnknownOIDCProcess, // Post-login OIDC handler did not find the OIDC login in DB
   OIDCGaveNoToken, // Unlikely, would probably be error in OIDC provider
   OIDCGaveNoEmail, // Probably won't happen

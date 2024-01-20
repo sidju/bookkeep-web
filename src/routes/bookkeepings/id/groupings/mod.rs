@@ -2,46 +2,6 @@ use super::*;
 
 mod id;
 
-#[derive(Debug)]
-struct GroupingSummary {
-  id: i64,
-  name: String,
-  movement: Decimal,
-}
-#[derive(Debug, Template)]
-#[template(path = "bookkeepings/id/groupings/index.html")]
-struct Index {
-  groupings: Vec<GroupingSummary>,
-}
-
-async fn index(
-  state: &'static State,
-  req: Request,
-  session: SessionData,
-  bookkeeping_id: i64,
-) -> Result<Response, Error> {
-  let g = sqlx::query_as!(GroupingSummary,
-    "
-SELECT Groupings.id, Groupings.name, COALESCE(SUM(CASE
-    WHEN AccountChanges.amount > 0 THEN AccountChanges.amount
-    ELSE 0
-  END), 0) AS \"movement!\"
-  FROM Groupings
-  LEFT JOIN Transactions ON Transactions.grouping_id = Groupings.id
-  LEFT JOIN AccountChanges ON AccountChanges.transaction_id = Transactions.id
-WHERE Groupings.bookkeeping_id = $1
-GROUP BY Groupings.id
-    ",
-    bookkeeping_id,
-  )
-    .fetch_all(&state.db)
-    .await?
-  ;
-
-  html(Index{
-    groupings: g,
-  }.render()?)
-}
 #[derive(Debug, Deserialize)]
 struct NewGrouping {
   name: String,
@@ -65,9 +25,16 @@ async fn index_post(
   )
     .fetch_one(&state.db)
     .await
-    // TODO convert
-    // if is_unique_violation mark duplicate
-    // if foreign_key_violation mark bad request
+    // Convert name conflict to readable user error
+    .map_err(|e| -> Error { match e {
+      sqlx::Error::Database(ref dbe) if dbe.is_unique_violation() => {
+        ClientError::AlreadyExists(format!(
+          "A grouping by name {} already exists in this bookkeeping.",
+          new_grouping.name,
+        )).into()
+      },
+      e => e.into(),
+    }})
     ?
     .id
   ;
@@ -86,7 +53,6 @@ pub async fn route(
     Some("") => {
       verify_path_end(&path_vec, &req)?;
       match req.method() {
-//        &Method::GET => index(state, req, session, bookkeeping_id).await,
         &Method::POST => index_post(state, req, session, bookkeeping.id).await,
         _ => Err(Error::method_not_found(&req)),
       }
