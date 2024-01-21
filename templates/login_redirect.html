@@ -4,7 +4,10 @@
 
 {% block body %}
   <p>You are not currently logged in and tried to access a secure page.</p>
-  <p><a href="{{ url }}">Click this link to log in.</a></p>
+  <p>
+    <a id="link" href="{{ url }}">Click this link to log in.</a>
+    <script>document.getElementById('link').click()</script>
+  </p>
   <p>
     If you were submitting something your browser may warn you against possibly
     submitting it twice.

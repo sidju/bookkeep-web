@@ -33,16 +33,19 @@ pub async fn start_oidc_login_flow(
   ?;
 
   // Redirect the user to that url
-  set_status(
-    add_header(
-      html(LoginRedirect{url: authorize_url.as_str()}.render()?),
-      hyper::header::CACHE_CONTROL,
-      hyper::header::HeaderValue::from_static("no-store"),
-    ),
+  let res = html(LoginRedirect{url: authorize_url.as_str()}.render()?);
+  let res = add_header(
+    res,
+    hyper::header::CACHE_CONTROL,
+    hyper::header::HeaderValue::from_static("no-store"),
+  );
+  let res = set_status(
+    res,
     // Setting this status reduces risk of browser complaining about
     // about resubmitting when users get this page on a form submit
     StatusCode::UNAUTHORIZED,
-  )
+  );
+  res
 }
 
 #[derive(Deserialize, Serialize)]
@@ -132,9 +135,10 @@ pub async fn finish_oidc_login_flow(
 
   // Finally, the horror!
   // We return a website with the session cookie, which has a javascript tag to
-  // go back 2 steps (aka. to the request that initially triggered the login
-  // redirect to the OIDC provider).
-  html(
+  // go back 1 step (aka. to the request that initially triggered the login
+  // redirect to the OIDC provider, since the OIDC providers redirect doesn't
+  // seem to create a history entry).
+  let res = html(
 "<!DOCTYPE html>
 <html>
   <head>
@@ -149,17 +153,21 @@ pub async fn finish_oidc_login_flow(
   </body>
 </html>
 "
-  )
-    .and_then(|mut r| -> Result<Response, Error> {
-      r.headers_mut().insert(
-        hyper::header::SET_COOKIE,
-        HeaderValue::try_from(format!(
-          "session={}; Secure; HttpOnly; SameSite=Strict",
-          session_id,
-        ))?
-      );
-      Ok(r)
-    })
+  );
+  let res = add_header(
+    res,
+    hyper::header::SET_COOKIE,
+    HeaderValue::try_from(format!(
+      "session={}; Secure; HttpOnly; SameSite=Strict",
+      session_id,
+    ))?
+  );
+  let res = add_header(
+    res,
+    hyper::header::CACHE_CONTROL,
+    HeaderValue::from_static("no-store")
+  );
+  res
 
   // Might be nice to revoke the token as well
 }
