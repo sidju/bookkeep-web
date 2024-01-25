@@ -8,9 +8,10 @@
     <script src="https://unpkg.com/htmx.org/dist/ext/head-support.js"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/multi-swap.js"></script>
+    <script>window.addEventListener("htmx:sendError", function() { alert("A network error occured") })</script>
   </head>
-  <body hx-ext="response-targets,head-support" hx-target="body" hx-target-error="body">
-    <div id="global-error"></div>
+  <body hx-target="body" hx-target-error="body">
+    <div id="global-error" hx-swap-oob=true></div>
     {% block body %}Placeholder content{% endblock %}
   </body>
 </html>

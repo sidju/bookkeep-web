@@ -15,7 +15,7 @@ use crate::{
 
 // A utils file for common operations while routing
 mod utils;
-use utils::*;
+pub use utils::*;
 // OIDC handling functions
 mod auth;
 use auth::*;

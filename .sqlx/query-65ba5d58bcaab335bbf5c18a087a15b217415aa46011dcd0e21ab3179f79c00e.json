@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nSELECT Bookkeepings.id, Bookkeepings.name, Users.email AS owner\n  FROM Bookkeepings\n  LEFT JOIN UsersBookkeepingsAccess ON Bookkeepings.id = bookkeeping_id\n  JOIN Users ON Users.id = owner_id\nWHERE bookkeepings.owner_id = $1 OR UsersBookkeepingsAccess.user_id = $1\n    ",
+  "query": "\nSELECT Bookkeepings.id, Bookkeepings.name, Users.email AS owner\n  FROM Bookkeepings\n  LEFT JOIN UsersBookkeepingsAccess ON Bookkeepings.id = bookkeeping_id\n  JOIN Users ON Users.id = owner_id\nWHERE bookkeepings.owner_id = $1 OR UsersBookkeepingsAccess.user_id = $1\nORDER BY bookkeepings.id DESC\n    ",
   "describe": {
     "columns": [
       {
@@ -30,5 +30,5 @@
       false
     ]
   },
-  "hash": "62a8ee089a34f49be4c4a69d340956ca7cb5e58d399a7966f348582c39d2fc2d"
+  "hash": "65ba5d58bcaab335bbf5c18a087a15b217415aa46011dcd0e21ab3179f79c00e"
 }

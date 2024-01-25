@@ -15,25 +15,23 @@
   </table>
   <br>
   Accounts:
-  <table>
+  <table id="accounts-list">
     <tr>
       <th>Name</th>
       <th>Balance</th>
       <th>Type</td>
     </tr>
     {% for a in accounts %}
-    <tr>
-      {% if created.equals_account(a.id) %}
-      <td><b>{{ a.name }}</b></td>
-      {% else %}
-      <td>{{ a.name }}</td>
-      {% endif %}
-      <td>{{ a.balance }}</td>
-      <td>{{ a.type }}</td>
-    </tr>
+    {% include "account-entry.part.html" %}
     {% endfor %}
   </table>
-  <form method="post" formenctype="application/x-www-form-urlencoded" action="accounts/">
+  <form id="account-form"
+    hx-post="accounts/"
+    hx-select="#account"
+    hx-swap="beforeend"
+    hx-target="#accounts-list"
+    hx-on::after-request="this.reset()"
+  >
     Create new account:
     <br>
     Name: <input type="text" name="name">
@@ -54,14 +52,7 @@
       <th>Total monetary movement</th>
     </tr>
     {% for g in groupings %}
-    <tr>
-      {% if created.equals_grouping(g.id) %}
-      <td><a href="groupings/{{ g.id }}/"><b>{{ g.name }}</b></a></td>
-      {% else %}
-      <td><a href="groupings/{{ g.id }}/">{{ g.name }}</a></td>
-      {% endif %}
-      <td>{{ g.movement }}</td>
-    </tr>
+    {% include "grouping-entry.part.html" %}
     {% endfor %}
   </table>
   <form method="post" formenctype="application/x-www-form-urlencoded" action="groupings/">
