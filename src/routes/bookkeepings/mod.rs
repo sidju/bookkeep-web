@@ -79,6 +79,11 @@ async fn index_post(
           new_bookkeeping.name,
         )).into()
       },
+      sqlx::Error::Database(ref dbe) if dbe.is_check_violation() => {
+        ClientError::InvalidData(
+          "A Bookkeeping name must contain at least one character.".to_string(),
+        ).into()
+      },
       e => e.into(),
     }})
     ?

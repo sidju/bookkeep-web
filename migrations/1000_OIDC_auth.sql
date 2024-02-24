@@ -17,7 +17,7 @@ CREATE TABLE Users (
 -- OIDC login takes care of authentication and user metadata, but we still need
 -- to manage the sessions ourselves.
 CREATE TABLE Sessions (
-	session_id VARCHAR PRIMARY KEY, -- Randomly generated, collisions improbable
+	session_id VARCHAR PRIMARY KEY CHECK (session_id <> ''), -- Randomly generated, collisions improbable
 	user_id INTEGER NOT NULL, -- The user this session claims that you are
 	valid_until TIMESTAMPTZ DEFAULT NOW() + '6 hours',
 	-- Other relevant user metadata we get from OIDC

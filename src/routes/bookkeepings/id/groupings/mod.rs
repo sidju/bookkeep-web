@@ -6,6 +6,11 @@ mod id;
 struct NewGrouping {
   name: String,
 }
+#[derive(Template)]
+#[template(path = "bookkeepings/id/grouping-entry.part.html")]
+struct IndexPost {
+  g: GroupingSummary,
+}
 async fn index_post(
   state: &'static State,
   mut req: Request,
@@ -18,8 +23,11 @@ async fn index_post(
     state.max_content_len,
   ).await?;
   // Insert into database
-  let created = sqlx::query!(
-    "INSERT INTO Groupings(name, bookkeeping_id) VALUES($1, $2) RETURNING id",
+  let created = sqlx::query_as!(GroupingSummary,
+    "
+INSERT INTO Groupings(name, bookkeeping_id) VALUES($1, $2)
+RETURNING id, name, 0 AS \"movement!\"
+    ",
     new_grouping.name,
     bookkeeping_id,
   )
@@ -36,10 +44,11 @@ async fn index_post(
       e => e.into(),
     }})
     ?
-    .id
   ;
   // Redirect to parent with newly created grouping marked
-  see_other(&format!("../?new_grouping={created}"))
+  html(IndexPost{
+    g: created,
+  }.render()?)
 }
 pub async fn route(
   state: &'static State,

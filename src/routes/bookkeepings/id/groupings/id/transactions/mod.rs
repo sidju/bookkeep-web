@@ -7,6 +7,11 @@ struct NewTransaction {
   name: String,
   date: Date,
 }
+#[derive(Debug, Template)]
+#[template(path = "bookkeepings/id/groupings/id/transaction-entry.part.html")]
+struct IndexPost{
+  t: TransactionSummary,
+}
 async fn index_post(
   state: &'static State,
   mut req: Request,
@@ -20,9 +25,10 @@ async fn index_post(
     state.max_content_len,
   ).await?;
   // Insert into database
-  let created = sqlx::query!(
+  let created = sqlx::query_as!(TransactionSummary,
     "
-INSERT INTO Transactions(name, day, grouping_id) VALUES($1,$2,$3) RETURNING id
+INSERT INTO Transactions(name, day, grouping_id) VALUES($1,$2,$3)
+RETURNING id, name, day as date, 0 as \"sum!\"
     ",
     new_transaction.name,
     new_transaction.date,
@@ -30,10 +36,9 @@ INSERT INTO Transactions(name, day, grouping_id) VALUES($1,$2,$3) RETURNING id
   )
     .fetch_one(&state.db)
     .await?
-    .id
   ;
   // Redirect to parent with created as query param
-  see_other(&format!("../?new_transaction={created}"))
+  html(IndexPost{t: created}.render()?)
 }
 pub async fn route(
   state: &'static State,
