@@ -26,25 +26,13 @@ struct Index {
   sum: Decimal,
   accounts_by_type: std::collections::HashMap<String, Vec<Account>>,
   account_changes: Vec<AccountChange>,
-  created: Created,
-}
-#[derive(Debug, Deserialize)]
-struct Created {
-  new_account_change: Option<i64>,
-}
-impl Created {
-  fn equals_account_change(&self, id: &i64) -> bool {
-    self.new_account_change == Some(*id)
-  }
 }
 async fn index(
   state: &'static State,
-  req: Request,
   session: SessionData,
   bookkeeping: Bookkeeping,
   grouping: Grouping,
   transaction: TransactionSummary,
-  created: Created,
 ) -> Result<Response, Error> {
   // Then get all the account changes in the transaction
   let account_changes = sqlx::query_as!(AccountChange,
@@ -89,7 +77,6 @@ WHERE Accounts.bookkeeping_id = $1
     date: transaction.date,
     sum: transaction.sum,
     account_changes,
-    created,
     accounts_by_type,
   }.render()?)
 }
@@ -123,15 +110,12 @@ ORDER BY Transactions.day
     None => permanent_redirect(&format!("{}/", req.uri().path())),
     Some("") => {
       verify_method_path_end(&path_vec, &req, &Method::GET)?;
-      let created: Created = parse_query(&req)?;
       index(
         state,
-        req,
         session,
         bookkeeping,
         grouping,
         transaction,
-        created,
       ).await
     },
     Some("account-changes") => account_changes::route(

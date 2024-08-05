@@ -45,6 +45,7 @@ pub async fn route(
   ;
   // If the first path is something the uri is malformed
   // (such as http://localhost:8080wrong/path)
+  // ((This is probably caught by hyper, but might as well check.))
   match path_vec.pop().as_deref() {
     None | Some("") => (),
     Some(unexpected) => {

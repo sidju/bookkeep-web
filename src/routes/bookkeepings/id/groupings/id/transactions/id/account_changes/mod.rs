@@ -7,12 +7,15 @@ struct NewAccountChange {
   message: String,
   amount: Decimal,
 }
+#[derive(Debug, Template)]
+#[template(path = "bookkeepings/id/groupings/id/transactions/id/account_change-entry.part.html")]
+struct IndexPost{
+  a: AccountChange,
+}
 async fn index_post(
   state: &'static State,
   mut req: Request,
   session: SessionData,
-  bookkeeping: Bookkeeping,
-  grouping: Grouping,
   transaction: TransactionSummary,
 ) -> Result<Response, Error> {
   // Parse out the new transaction
@@ -21,9 +24,14 @@ async fn index_post(
     state.max_content_len,
   ).await?;
   // Insert into database
-  let created = sqlx::query!(
+  let created = sqlx::query_as!(AccountChange,
     "
-INSERT INTO AccountChanges(account_id, day, message, amount, transaction_id) VALUES($1,$2,$3,$4,$5) RETURNING id
+WITH inserted AS (
+  INSERT INTO AccountChanges(account_id, day, message, amount, transaction_id) VALUES($1,$2,$3,$4,$5)
+  RETURNING *
+) SELECT inserted.id, Accounts.name AS account_name, inserted.message, inserted.day AS date, inserted.amount
+  FROM inserted
+  INNER JOIN Accounts on inserted.account_id = Accounts.id
     ",
     new_account_change.account,
     new_account_change.date,
@@ -33,10 +41,11 @@ INSERT INTO AccountChanges(account_id, day, message, amount, transaction_id) VAL
   )
     .fetch_one(&state.db)
     .await?
-    .id
   ;
-  // Redirect to parent with created as query param
-  see_other(&format!("../?new_account_change={created}"))
+  // Return list fragment for the created entry
+  html(IndexPost{
+    a: created,
+  }.render()?)
 }
 pub async fn route(
   state: &'static State,
@@ -55,8 +64,6 @@ pub async fn route(
         state,
         req,
         session,
-        bookkeeping,
-        grouping,
         transaction,
       ).await
     },

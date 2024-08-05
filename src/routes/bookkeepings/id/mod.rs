@@ -3,12 +3,6 @@ use super::*;
 mod accounts;
 mod groupings;
 
-#[derive(Debug)]
-pub struct Bookkeeping {
-  id: i64,
-  name: String,
-  owner: String,
-}
 #[derive(Debug, Clone)]
 struct AccountSummary {
   id: i64,
@@ -26,19 +20,6 @@ struct GroupingSummary {
   name: String,
   movement: Decimal,
 }
-#[derive(Debug, Deserialize, PartialEq, Eq)]
-struct Created {
-  new_account: Option<i64>,
-  new_grouping: Option<i64>,
-}
-impl Created {
-  fn equals_account(&self, id: &i64) -> bool {
-    self.new_account == Some(*id)
-  }
-  fn equals_grouping(&self, id: &i64) -> bool {
-    self.new_grouping == Some(*id)
-  }
-}
 #[derive(Debug, Template)]
 #[template(path = "bookkeepings/id/index.html")]
 struct Index {
@@ -51,7 +32,6 @@ struct Index {
 
 async fn index(
   state: &'static State,
-  req: Request,
   session: SessionData,
   bookkeeping: Bookkeeping,
 ) -> Result<Response, Error> {
@@ -130,7 +110,7 @@ WHERE (Bookkeepings.owner_id = $1 OR UsersBookkeepingsAccess.user_id = $1)
     None => permanent_redirect(&format!("{}/", req.uri().path())),
     Some("") => {
       verify_method_path_end(&path_vec, &req, &Method::GET)?;
-      index(state, req, session, bookkeeping).await
+      index(state, session, bookkeeping).await
     },
     Some("accounts") => accounts::route(state, req, path_vec, session, bookkeeping).await,
     Some("groupings") => groupings::route(state, req, path_vec, session, bookkeeping).await,

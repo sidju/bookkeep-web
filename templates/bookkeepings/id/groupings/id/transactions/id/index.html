@@ -15,33 +15,31 @@
       <td>{{ name }}</td>
       <td>{{ date }}</td>
       <td>{{ sum }}</td>
-      <td>{{ grouping_name }}</td>
-      <td>{{ bookkeeping_name }}</td>
+      <td><a href="../../">{{ grouping_name }}</a></td>
+      <td><a href="../../../../">{{ bookkeeping_name }}</a></td>
     </tr>
   </table>
   <br>
   Account changes:
-  <table>
+  <table id="account-changes-list">
     <tr>
-      <td>Account</th>
+      <th>Account</th>
       <th>Date</th>
-      <td>Message</th>
+      <th>Message</th>
       <th>Amount</th>
+      <th display=none>ID</th>
     </tr>
     {% for a in account_changes %}
-    <tr>
-      {% if created.equals_account_change(a.id) %}
-      <td><b>{{ a.account_name }}</b></td>
-      {% else %}
-      <td>{{ a.account_name }}</td>
-      {% endif %}
-      <td>{{ a.date.to_string() }}</td>
-      <td>{{ a.message }}</td>
-      <td>{{ a.amount.to_string() }}</td>
-    </tr>
+      {% include "account_change-entry.part.html" %}
     {% endfor %}
   </table>
-  <form method="post" formenctype="application/x-www-form-urlencoded" action="account-changes/">
+  <form id="account-change-form"
+    hx-post="account-changes/"
+    hx-select="#account-change"
+    hx-swap="beforeend"
+    hx-target="#account-changes-list"
+    hx-on::after-request="this.reset()"
+  >
     Create new account change:
     <br>
     Account: <select name="account">

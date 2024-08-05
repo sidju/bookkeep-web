@@ -17,7 +17,6 @@ struct Index {
 
 async fn index(
   state: &'static State,
-  req: Request,
   session: SessionData,
 ) -> Result<Response, Error> {
   // Get relevant data in a way that effectively validates permissions
@@ -135,7 +134,7 @@ pub async fn route(
     Some("") => {
       verify_path_end(&path_vec, &req)?;
       match req.method() {
-        &Method::GET => index(state, req, session).await,
+        &Method::GET => index(state, session).await,
         &Method::POST => index_post(state, req, session).await,
         _ => Err(Error::method_not_found(&req)),
       }
