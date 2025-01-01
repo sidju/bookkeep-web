@@ -46,7 +46,7 @@
   </form>
   <br>
   Transaction Groupings:
-  <table id="groupings-list">
+  <table>
     <tr>
       <th>Name</th>
       <th>Total monetary movement</th>
@@ -55,13 +55,7 @@
     {% include "grouping-entry.part.html" %}
     {% endfor %}
   </table>
-  <form
-    hx-post="groupings/"
-    hx-select="#grouping"
-    hx-swap="beforeend"
-    hx-target="#groupings-list"
-    hx-on::after-request="this.reset()"
-  >
+  <form method="post" formenctype="application/x-www-form-urlencoded" action="groupings/">
     Create new grouping:
     <br>
     Name: <input type="text" name="name">

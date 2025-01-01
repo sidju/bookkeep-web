@@ -104,7 +104,6 @@ pub enum ClientError {
 
   // Request processing errors
   AlreadyExists(String), // For example uniqueness error on name column
-  InvalidData(String), // For example no name given
 
   // Non-parsing user-caused errors (but probably not intentional)
   UnknownOIDCProcess, // Post-login OIDC handler did not find the OIDC login in DB

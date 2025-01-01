@@ -1,5 +1,0 @@
-    <tr id="transaction">
-      <td><a href="transactions/{{ t.id }}/">{{ t.name }}</a></td>
-      <td>{{ t.date.to_string() }}</td>
-      <td>{% if t.sum.is_zero() %}valid{% else %}<b>INVALID BY {{ t.sum }}</b>{% endif %}</td>
-    </tr>

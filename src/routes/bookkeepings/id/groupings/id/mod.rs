@@ -16,6 +16,15 @@ pub struct TransactionSummary {
   date: Date,
   sum: Decimal,
 }
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+struct Created {
+  new_transaction: Option<i64>,
+}
+impl Created {
+  fn equals_transaction(&self, id: &i64) -> bool {
+    self.new_transaction == Some(*id)
+  }
+}
 #[derive(Debug, Template)]
 #[template(path = "bookkeepings/id/groupings/id/index.html")]
 struct Index {
@@ -24,6 +33,7 @@ struct Index {
   accounts: Vec<AccountSummary>,
   transactions: Vec<TransactionSummary>,
   accounts_by_type: std::collections::HashMap::<String, Vec<AccountSummary>>,
+  created: Created,
 }
 // Give a summary over the grouping, just like for bookkeepings above
 async fn index(
@@ -31,6 +41,7 @@ async fn index(
   session: SessionData,
   bookkeeping: Bookkeeping,
   grouping: Grouping,
+  query: Created,
 ) -> Result<Response, Error> {
   let a = sqlx::query_as!(AccountSummary,
     "
@@ -84,6 +95,7 @@ ORDER BY Transactions.day
     accounts: a,
     transactions: t,
     accounts_by_type,
+    created: query,
   }.render()?)
 }
 
@@ -116,7 +128,8 @@ WHERE Groupings.bookkeeping_id = $1 AND Groupings.id = $2
       verify_path_end(&path_vec, &req)?;
       match req.method() {
         &Method::GET => {
-          index(state, session, bookkeeping, grouping).await
+          let query: Created = parse_query(&req)?;
+          index(state, session, bookkeeping, grouping, query).await
         },
         _ => Err(Error::method_not_found(&req)),
       }

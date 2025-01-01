@@ -3,7 +3,7 @@ BEGIN; -- Work in a transaction
 -- Base object of a bookkeeping, all others connect up to it in a tree of links
 CREATE TABLE Bookkeepings (
   id BIGSERIAL PRIMARY KEY,
-  name VARCHAR(64) NOT NULL CHECK (name <> ''),
+  name VARCHAR(64) NOT NULL,
   owner_id BIGINT NOT NULL,
 
   UNIQUE(name, owner_id),
@@ -23,7 +23,7 @@ CREATE TABLE UsersBookkeepingsAccess (
 
 --- Used as an enum, but sqlx doesn't handle postgres enums well
 CREATE TABLE AccountTypes (
-  name VARCHAR(64) PRIMARY KEY CHECK (name <> '')
+  name VARCHAR(64) PRIMARY KEY
 );
 INSERT INTO AccountTypes(name) VALUES ('Expense'),('Asset'),('Debt'),('Income');
 
@@ -31,7 +31,7 @@ INSERT INTO AccountTypes(name) VALUES ('Expense'),('Asset'),('Debt'),('Income');
 CREATE TABLE Accounts (
   id BIGSERIAL PRIMARY KEY,
   bookkeeping_id BIGINT NOT NULL,
-  name VARCHAR(64) NOT NULL CHECK (name <> ''),
+  name VARCHAR(64) NOT NULL,
   type VARCHAR(64) NOT NULL,
 
   UNIQUE (bookkeeping_id, name),
@@ -44,7 +44,7 @@ CREATE TABLE Accounts (
 -- Every Transaction belongs to a single Grouping
 CREATE TABLE Groupings (
   id BIGSERIAL PRIMARY KEY,
-  name VARCHAR(64) NOT NULL CHECK (name <> ''),
+  name VARCHAR(64) NOT NULL,
   bookkeeping_id BIGINT NOT NULL,
   comments JSONB DEFAULT '{}'::jsonb,
 
@@ -56,7 +56,7 @@ CREATE TABLE Groupings (
 -- One financial event, that the account changes it caused is linked to
 CREATE TABLE Transactions (
   id BIGSERIAL PRIMARY KEY,
-  name VARCHAR(64) NOT NULL CHECK (name <> ''),
+  name VARCHAR(64) NOT NULL,
   day DATE NOT NULL,
   grouping_id BIGINT NOT NULL,
   comments JSONB DEFAULT '{}'::jsonb,

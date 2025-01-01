@@ -31,23 +31,25 @@
   </table>
   <br>
   Transactions:
-  <table id="transactions-list">
+  <table>
     <tr>
       <th>Name</th>
       <th>Date</th>
       <th>Valid</th>
     </tr>
     {% for t in transactions %}
-      {% include "transaction-entry.part.html" %}
+    <tr>
+      {% if created.equals_transaction(t.id) %}
+      <td><a href="transactions/{{ t.id }}/"><b>{{ t.name }}</b></a></td>
+      {% else %}
+      <td><a href="transactions/{{ t.id }}/">{{ t.name }}</a></td>
+      {% endif %}
+      <td>{{ t.date.to_string() }}</td>
+      <td>{% if t.sum.is_zero() %}valid{% else %}<b>INVALID BY {{ t.sum }}</b>{% endif %}</td>
+    </tr>
     {% endfor %}
   </table>
-  <form
-    hx-post="transactions/"
-    hx-swap="afterbegin"
-    hx-select="#transaction"
-    hx-target="#transactions-list"
-    hx-on::after-request="this.reset()"
-  >
+  <form hx-post="transactions/">
     Create new transaction:
     <br>
     Name: <input type="text" name="name">
