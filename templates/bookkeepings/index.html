@@ -5,24 +5,17 @@
 {% block body %}
   <p>Hello {{email}}!</p>
 
-  <form id="bookkeeping-form"
-    hx-post="./"
-    hx-swap="beforeend"
-    hx-select="#bookkeeping"
-    hx-target="#bookkeepings-list"
-    hx-on::ofter-request="this.reset()"
-  >
+  <form method="post" formenctype="application/x-www-form-urlencoded">
     Create a new bookkeeping:
     <br>
     Name: <input type="text" name="name">
     <br>
     <input type="submit" value="Create">
   </form>
-  <div id="form-error"></div>
 
-  <ul id="bookkeepings-list">
+  <ul>
   {% for b in bookkeepings %}
-    <li id="bookkeeping"><a href="{{ b.id }}/">{{ b.name }}</a></li>
+    <li><a href="{{ b.id }}/">{{ b.name }}</a></li>
   {% endfor %}
   </ul>
 

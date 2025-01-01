@@ -1,16 +1,11 @@
 <!DOCTYPE html>
 <html>
-  <head hx-head="merge">
+  <head>
     <title>Bookkeep: {% block title %}placeholder title{% endblock %}</title>
     {% block head %}{% endblock %}
     <link rel="stylesheet" href="/styles.css">
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script src="https://unpkg.com/htmx.org/dist/ext/head-support.js"></script>
-    <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
-    <script src="https://unpkg.com/htmx.org/dist/ext/multi-swap.js"></script>
   </head>
-  <body hx-ext="response-targets,head-support" hx-target="body" hx-target-error="body">
-    <div id="global-error"></div>
+  <body>
     {% block body %}Placeholder content{% endblock %}
   </body>
 </html>

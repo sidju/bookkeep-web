@@ -58,11 +58,10 @@ async fn index_post(
 
   // No validation needed, invalid data can't be represented
   // Insert into database
-  let created = sqlx::query_as!(Bookkeeping,
-    "INSERT INTO Bookkeepings(name, owner_id) VALUES($1, $2) RETURNING id, name, $3 AS \"owner!\"",
+  let created = sqlx::query!(
+    "INSERT INTO Bookkeepings(name, owner_id) VALUES($1, $2) RETURNING id",
     new_bookkeeping.name,
     session.user_id,
-    session.email,
   )
     .fetch_one(&state.db)
     .await
@@ -76,13 +75,11 @@ async fn index_post(
       e => e.into(),
     }})
     ?
+    .id
   ;
 
-  // Render and return
-  html(Index{
-    email: session.email,
-    bookkeepings: vec![created],
-  }.render()?)
+  // Return a the created object
+  see_other(&format!("{}/", created))
 }
 
 pub async fn route(
