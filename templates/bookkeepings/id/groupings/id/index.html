@@ -10,7 +10,7 @@
     </tr>
     <tr>
       <td>{{ name }}</td>
-      <td><a href="../../">{{ bookkeeping_name }}</a></td>
+      <td>{{ bookkeeping_name }}</td>
     </tr>
   </table>
   <br>
@@ -43,7 +43,7 @@
   </table>
   <form
     hx-post="transactions/"
-    hx-swap="beforeend"
+    hx-swap="afterbegin"
     hx-select="#transaction"
     hx-target="#transactions-list"
     hx-on::after-request="this.reset()"

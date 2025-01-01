@@ -15,31 +15,33 @@
       <td>{{ name }}</td>
       <td>{{ date }}</td>
       <td>{{ sum }}</td>
-      <td><a href="../../">{{ grouping_name }}</a></td>
-      <td><a href="../../../../">{{ bookkeeping_name }}</a></td>
+      <td>{{ grouping_name }}</td>
+      <td>{{ bookkeeping_name }}</td>
     </tr>
   </table>
   <br>
   Account changes:
-  <table id="account-changes-list">
+  <table>
     <tr>
-      <th>Account</th>
+      <td>Account</th>
       <th>Date</th>
-      <th>Message</th>
+      <td>Message</th>
       <th>Amount</th>
-      <th display=none>ID</th>
     </tr>
     {% for a in account_changes %}
-      {% include "account_change-entry.part.html" %}
+    <tr>
+      {% if created.equals_account_change(a.id) %}
+      <td><b>{{ a.account_name }}</b></td>
+      {% else %}
+      <td>{{ a.account_name }}</td>
+      {% endif %}
+      <td>{{ a.date.to_string() }}</td>
+      <td>{{ a.message }}</td>
+      <td>{{ a.amount.to_string() }}</td>
+    </tr>
     {% endfor %}
   </table>
-  <form id="account-change-form"
-    hx-post="account-changes/"
-    hx-select="#account-change"
-    hx-swap="beforeend"
-    hx-target="#account-changes-list"
-    hx-on::after-request="this.reset()"
-  >
+  <form method="post" formenctype="application/x-www-form-urlencoded" action="account-changes/">
     Create new account change:
     <br>
     Account: <select name="account">

@@ -16,6 +16,7 @@ async fn index_post(
   state: &'static State,
   mut req: Request,
   session: SessionData,
+  bookkeeping: Bookkeeping,
   grouping: Grouping,
 ) -> Result<Response, Error> {
   // Parse out the new transaction
@@ -55,9 +56,11 @@ pub async fn route(
         state,
         req,
         session,
+        bookkeeping,
         grouping,
       ).await
     },
     Some(id) => id::route(state, req, path_vec, session, bookkeeping, grouping, id.parse()?).await,
+    _ => Err(Error::path_not_found(&req)),
   }
 }

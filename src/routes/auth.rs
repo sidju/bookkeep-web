@@ -123,13 +123,6 @@ pub async fn finish_oidc_login_flow(
 
   // At this stage we have the user metadata in id_token_claims and have
   // confirmed the user's identity, so we create a session for them.
-
-  // Should consider using ULID or CUID2 instead
-  // - ULID begins with the creation timestamp, making it inherently sortable.
-  //   (Which may reduce database index size relative to nr of stored entries,
-  //   at the risk of load possibly being concentrated in one part of the index)
-  // - CUID2 uses more sources of randomness for better security and collision
-  //   resistance. Mostly same as nanoid, but slightly slower and safer.
   let session_id = nanoid::nanoid!(32);
   sqlx::query(
     "INSERT INTO Sessions(session_id, user_id) VALUES($1, $2)"
