@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Imported account changes{% endblock %}
+
+{% block body %}
+  Imported account changes:
+  <table>
+    <tr>
+      <th>Account</th>
+      <th>Date</th>
+      <th>Amount</th>
+      <th>Other data</th>
+    </tr>
+    {% for a in imported_account_changes %}
+    <tr>
+      <td>{{ a.account_name }}</td>
+      <td>{{ a.date }}</td>
+      <td>{{ a.amount }}</td>
+      <td>{{ a.other_data }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <form method="post" formenctype="multipart/form-data" action="./">
+    Import account changes from CSV file:
+    <br>
+    Account: <select name="account">
+      {% for (t, accounts) in accounts_by_type %}
+      <optgroup label="{{ t }}">
+        {% for a in accounts %}
+          <option value="{{ a.id }}">{{ a.name }}</option>
+        {% endfor %}
+      </optgroup>
+      {% endfor %}
+    </select>
+    <br>
+    <input type="file" name="changes_csv" accept=".csv,text/csv">
+    <br>
+    <input type="submit" value="Import">
+  </form>
+{% endblock %}

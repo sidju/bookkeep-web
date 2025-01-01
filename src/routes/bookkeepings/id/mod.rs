@@ -2,6 +2,7 @@ use super::*;
 
 mod accounts;
 mod groupings;
+mod imported_account_changes;
 
 #[derive(Debug)]
 pub struct Bookkeeping {
@@ -138,6 +139,7 @@ WHERE (Bookkeepings.owner_id = $1 OR UsersBookkeepingsAccess.user_id = $1)
     },
     Some("accounts") => accounts::route(state, req, path_vec, session, bookkeeping).await,
     Some("groupings") => groupings::route(state, req, path_vec, session, bookkeeping).await,
+    Some("imported_account_changes") => imported_account_changes::route(state, req, path_vec, session, bookkeeping).await,
     _ => Err(Error::path_not_found(&req)),
   }
 }
