@@ -5,12 +5,7 @@ struct NewAccount {
   name: String,
   r#type: String,
 }
-#[derive(Debug, Template)]
-#[template(path = "bookkeepings/id/account-entry.part.html")]
-struct IndexPost {
-  a: AccountSummary,
-}
-async fn index_post(
+async fn index_put(
   state: &'static State,
   mut req: Request,
   session: SessionData,
@@ -22,11 +17,8 @@ async fn index_post(
     state.max_content_len,
   ).await?;
   // Insert into database
-  let created = sqlx::query_as!(AccountSummary,
-    "
-INSERT INTO Accounts(name, type, bookkeeping_id) VALUES($1, $2, $3)
-RETURNING id, name, type, 0 AS \"balance!\"
-    ",
+  let created = sqlx::query!(
+    "INSERT INTO Accounts(name, type, bookkeeping_id) VALUES($1, $2, $3) RETURNING id",
     new_account.name,
     new_account.r#type,
     bookkeeping_id,
@@ -43,11 +35,10 @@ RETURNING id, name, type, 0 AS \"balance!\"
       e => e.into(),
     }})
     ?
+    .id
   ;
   // Redirect to parent with query parameter of created account's id
-  html(IndexPost{
-    a: created
-  }.render()?)
+  see_other(&format!("../?new_account={created}"))
 }
 pub async fn route(
   state: &'static State,
@@ -61,7 +52,7 @@ pub async fn route(
     Some("") => {
       verify_path_end(&path_vec, &req)?;
       match req.method() {
-        &Method::POST => index_post(state, req, session, bookkeeping.id).await,
+        &Method::POST => index_put(state, req, session, bookkeeping.id).await,
         _ => Err(Error::method_not_found(&req)),
       }
     },

@@ -32,7 +32,6 @@ struct Index {
   bookkeeping_name: String,
   accounts: Vec<AccountSummary>,
   transactions: Vec<TransactionSummary>,
-  accounts_by_type: std::collections::HashMap::<String, Vec<AccountSummary>>,
   created: Created,
 }
 // Give a summary over the grouping, just like for bookkeepings above
@@ -45,22 +44,14 @@ async fn index(
 ) -> Result<Response, Error> {
   let a = sqlx::query_as!(AccountSummary,
     "
-SELECT id AS \"id!\", name AS \"name!\", type AS \"type!\", COALESCE(SUM(amount), 0) AS \"balance!\"
-FROM (
-  SELECT Accounts.id, Accounts.name, Accounts.type, AccountChanges.amount
-    FROM Accounts
-    LEFT JOIN AccountChanges ON AccountChanges.account_id = Accounts.id
-    LEFT JOIN Transactions ON Transactions.id = AccountChanges.transaction_id
-  WHERE Transactions.grouping_id = $2
-  UNION ALL
-  SELECT Accounts.id, Accounts.name, Accounts.type, 0 AS amount
-    FROM Accounts
-  WHERE Accounts.bookkeeping_id = $1
-)
-GROUP BY id, name, type
-ORDER BY type, name
+SELECT Accounts.id, Accounts.name, Accounts.type, COALESCE(SUM(AccountChanges.amount), 0) AS \"balance!\"
+  FROM Transactions
+  INNER JOIN AccountChanges ON AccountChanges.transaction_id = Transactions.id
+  RIGHT JOIN Accounts ON Accounts.id = AccountChanges.account_id
+WHERE Transactions.grouping_id = $1
+GROUP BY Accounts.id, Accounts.name, Accounts.type
+ORDER BY Accounts.type, Accounts.name
     ",
-    bookkeeping.id,
     grouping.id,
   )
     .fetch_all(&state.db)
@@ -81,20 +72,12 @@ ORDER BY Transactions.day
     .fetch_all(&state.db)
     .await?
   ;
-  // Group copies of accounts by account type
-  let mut accounts_by_type = std::collections::HashMap::<String, Vec<AccountSummary>>::new();
-  for account in &a {
-    match accounts_by_type.get_mut(&account.r#type) {
-      Some(x) => x.push(account.clone()),
-      None => { accounts_by_type.insert(account.r#type.clone(), vec![account.clone()]); },
-    }
-  }
+  println!("{t:?}");
   html(Index{
     name: grouping.name,
     bookkeeping_name: bookkeeping.name,
     accounts: a,
     transactions: t,
-    accounts_by_type,
     created: query,
   }.render()?)
 }

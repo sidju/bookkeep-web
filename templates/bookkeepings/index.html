@@ -7,10 +7,10 @@
 
   <form id="bookkeeping-form"
     hx-post="./"
-    hx-swap="afterbegin"
+    hx-swap="beforeend"
     hx-select="#bookkeeping"
     hx-target="#bookkeepings-list"
-    hx-on::after-request="this.reset()"
+    hx-on::ofter-request="this.reset()"
   >
     Create a new bookkeeping:
     <br>
@@ -18,11 +18,11 @@
     <br>
     <input type="submit" value="Create">
   </form>
-  <div id="form-error" hx-swap-oob=true></div>
+  <div id="form-error"></div>
 
   <ul id="bookkeepings-list">
   {% for b in bookkeepings %}
-    {% include "bookkeeping-entry.part.html" %}
+    <li id="bookkeeping"><a href="{{ b.id }}/">{{ b.name }}</a></li>
   {% endfor %}
   </ul>
 

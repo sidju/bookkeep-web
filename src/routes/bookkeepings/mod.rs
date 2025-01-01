@@ -28,7 +28,6 @@ SELECT Bookkeepings.id, Bookkeepings.name, Users.email AS owner
   LEFT JOIN UsersBookkeepingsAccess ON Bookkeepings.id = bookkeeping_id
   JOIN Users ON Users.id = owner_id
 WHERE bookkeepings.owner_id = $1 OR UsersBookkeepingsAccess.user_id = $1
-ORDER BY bookkeepings.id DESC
     ",
     session.user_id,
   )
@@ -45,11 +44,6 @@ ORDER BY bookkeepings.id DESC
 #[derive(Debug,Deserialize)]
 struct NewBookkeeping{
   name: String,
-}
-#[derive(Template)]
-#[template(path = "bookkeepings/bookkeeping-entry.part.html")]
-struct IndexPost {
-  b: Bookkeeping,
 }
 async fn index_post(
   state: &'static State,
@@ -85,8 +79,9 @@ async fn index_post(
   ;
 
   // Render and return
-  html(IndexPost{
-    b: created,
+  html(Index{
+    email: session.email,
+    bookkeepings: vec![created],
   }.render()?)
 }
 

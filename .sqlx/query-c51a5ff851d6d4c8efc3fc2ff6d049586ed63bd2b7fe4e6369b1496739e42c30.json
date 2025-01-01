@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nINSERT INTO Accounts(name, type, bookkeeping_id) VALUES($1, $2, $3)\nRETURNING id, name, type, 0 AS \"balance!\"\n    ",
+  "query": "\nSELECT Accounts.id, Accounts.name, Accounts.type, COALESCE(SUM(AccountChanges.amount), 0) AS \"balance!\"\n  FROM Transactions\n  INNER JOIN AccountChanges ON AccountChanges.transaction_id = Transactions.id\n  RIGHT JOIN Accounts ON Accounts.id = AccountChanges.account_id\nWHERE Transactions.grouping_id = $1\nGROUP BY Accounts.id, Accounts.name, Accounts.type\nORDER BY Accounts.type, Accounts.name\n    ",
   "describe": {
     "columns": [
       {
@@ -21,13 +21,11 @@
       {
         "ordinal": 3,
         "name": "balance!",
-        "type_info": "Int4"
+        "type_info": "Numeric"
       }
     ],
     "parameters": {
       "Left": [
-        "Varchar",
-        "Varchar",
         "Int8"
       ]
     },
@@ -38,5 +36,5 @@
       null
     ]
   },
-  "hash": "7e5a001ec2d168c22fdfa3b139b76df4c2f1b285488cdfa5a9e1241ae429f979"
+  "hash": "c51a5ff851d6d4c8efc3fc2ff6d049586ed63bd2b7fe4e6369b1496739e42c30"
 }

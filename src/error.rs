@@ -1,15 +1,11 @@
 // Needed imports
 use crate::Reply;
-use crate::routes::{
-  html,
-  set_status,
-};
+use hyper::header::HeaderValue;
 use hyper::{
 //  Request,
 //  Response,
   StatusCode,
 };
-use askama::Template;
 use serde::Serialize;
 // Public errors to wrap
 use hyper::header::ToStrError as UnreadableHeaderError;
@@ -32,21 +28,6 @@ use crate::traits::{
   Request,
   Response,
 };
-
-// Templates for error pages
-//
-// They use HTMX tags to insert the message into a page for HTMX requests, but
-// are also still HTML pages.
-#[derive(Template)]
-#[template(path = "global_error.html")]
-struct GlobalUIError{
-  message: String,
-}
-#[derive(Template)]
-#[template(path = "input_error.html")]
-struct InputUIError{
-  message: String,
-}
 
 // Error representation for internal errors
 // Prints to stderr and returns a http 500 internal error
@@ -88,7 +69,8 @@ pub enum ClientError {
 
   // Routing errors
   PathNotFound(String),
-  MethodNotFound{method: String, path: String},
+  MethodNotFound(String),
+  Unauthorized,
   Forbidden,
 
   // Parsing errors
@@ -114,75 +96,27 @@ pub enum ClientError {
 }
 impl Reply for ClientError {
   fn into_response(self) -> Response {
-    // Match on the error, to give a proper text description and HTTP status
-    let (status, body) = match self {
-      Self::InternalError => (
-        StatusCode::INTERNAL_SERVER_ERROR,
-        GlobalUIError{
-          message: "Internal server error. Please try again in a few minutes.".into(),
-        }.render(),
-      ),
+    let mut re = Response::new(
+      serde_json::to_string(&self)
+        .unwrap() // Only errors if self cannot be represented as json
+        .into()
+    );
+    *re.status_mut() = match self {
+      Self::InternalError => StatusCode::INTERNAL_SERVER_ERROR,
 
-      Self::PathNotFound(p) => (
-        StatusCode::NOT_FOUND,
-        GlobalUIError{
-          message: format!("Path {p} not found."),
-        }.render(),
-      ),
-      Self::MethodNotFound{method, path} => (
-        StatusCode::METHOD_NOT_ALLOWED,
-        GlobalUIError{
-          message: format!("Method {method} not valid for path {path}."),
-        }.render(),
-      ),
-      Self::Forbidden => (
-        StatusCode::FORBIDDEN,
-        GlobalUIError{
-          message: "Operation forbidden!".into(),
-        }.render(),
-      ),
+      Self::PathNotFound(_) => StatusCode::NOT_FOUND,
+      Self::MethodNotFound(_) => StatusCode::METHOD_NOT_ALLOWED,
+      Self::Unauthorized => StatusCode::UNAUTHORIZED,
+      Self::Forbidden => StatusCode::FORBIDDEN,
 
-      Self::AlreadyExists(message) => (
-        StatusCode::CONFLICT,
-        InputUIError{
-          message,
-        }.render(),
-      ),
-      Self::UserNotFound(email) => (
-        StatusCode::FORBIDDEN,
-        GlobalUIError{
-          message: format!("No account exists for gmail {email}. Contact admins to create one."),
-        }.render(),
-      ),
-
-      // The rest are weird formatting, so report that the user's browser is weird
-      x => (
-        StatusCode::BAD_REQUEST,
-        GlobalUIError{
-          message: format!(
-            "Bad request. Your browser is misbehaving. Error: {}",
-            serde_json::to_string(&x).unwrap(), // Only errors if struct can't be represented as json
-          ),
-        }.render(),
-      ),
+      // All the remaining should be bad request
+      _ => StatusCode::BAD_REQUEST
     };
-
-    // Construct a response from that
-    match body {
-      Ok(b) => {
-        let ret = html(b);
-        set_status(ret, status)
-      },
-      Err(e) => {
-        eprintln!("{}", e);
-        let ret = html(
-r#"<div id="global-error" hx-swap-oob=true>
-  Server is on proverbial fire. Kindly give us a while to recover.
-<\div>"#
-        );
-        set_status(ret, StatusCode::INTERNAL_SERVER_ERROR)
-      },
-    }.unwrap() // set_status returns option for ergonomics but is infallible
+    re.headers_mut().insert(
+      "Content-Type",
+      HeaderValue::from_static("application/json; charset=utf-8"),
+    );
+    re
   }
 }
 
@@ -203,10 +137,10 @@ impl Error {
     ClientError::PathNotFound(req.uri().path().to_owned()).into()
   }
   pub fn method_not_found(req: &Request) -> Self {
-    ClientError::MethodNotFound{
-      method: req.method().to_string(),
-      path: req.uri().path().to_string(),
-    }.into()
+    ClientError::MethodNotFound(req.method().to_string()).into()
+  }
+  pub fn unauthorized() -> Self {
+    ClientError::Unauthorized.into()
   }
   pub fn forbidden() -> Self {
     ClientError::Forbidden.into()

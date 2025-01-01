@@ -9,7 +9,7 @@ pub struct Bookkeeping {
   name: String,
   owner: String,
 }
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 struct AccountSummary {
   id: i64,
   name: String,
@@ -47,6 +47,7 @@ struct Index {
   accounts: Vec<AccountSummary>,
   groupings: Vec<GroupingSummary>,
   account_types: Vec<AccountType>,
+  created: Created,
 }
 
 async fn index(
@@ -54,6 +55,7 @@ async fn index(
   req: Request,
   session: SessionData,
   bookkeeping: Bookkeeping,
+  query: Created,
 ) -> Result<Response, Error> {
   let a = sqlx::query_as!(AccountSummary,
     "
@@ -99,6 +101,7 @@ GROUP BY Groupings.id
     accounts: a,
     groupings: g,
     account_types: t,
+    created: query,
   }.render()?)
 }
 pub async fn route(
@@ -130,7 +133,8 @@ WHERE (Bookkeepings.owner_id = $1 OR UsersBookkeepingsAccess.user_id = $1)
     None => permanent_redirect(&format!("{}/", req.uri().path())),
     Some("") => {
       verify_method_path_end(&path_vec, &req, &Method::GET)?;
-      index(state, req, session, bookkeeping).await
+      let created: Created = parse_query(&req)?;
+      index(state, req, session, bookkeeping, created).await
     },
     Some("accounts") => accounts::route(state, req, path_vec, session, bookkeeping).await,
     Some("groupings") => groupings::route(state, req, path_vec, session, bookkeeping).await,
